@@ -103,9 +103,8 @@
         });
 
         if (res.ok) {
-          notif.textContent = "Data berhasil dikirim!";
-          notif.style.color = "lightgreen";
-          form.reset();
+          if (res.ok) {
+  window.location.replace("https://google.com");
         } else {
           notif.textContent = "Gagal mengirim data.";
           notif.style.color = "orange";
