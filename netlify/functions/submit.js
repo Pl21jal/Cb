@@ -18,11 +18,24 @@ exports.handler = async (event, context) => {
     let fileName = null;
 
     busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+      // Pastikan filename tidak kosong
+      if (!filename) {
+        file.resume(); // lewati file ini
+        return;
+      }
+
       fileName = filename;
       const filePath = path.join('/tmp', filename);
-      file.pipe(fs.createWriteStream(filePath));
+
+      const writeStream = fs.createWriteStream(filePath);
+      file.pipe(writeStream);
+
       file.on('end', () => {
         fileData = filePath;
+      });
+
+      writeStream.on('error', (err) => {
+        console.error('Write error:', err);
       });
     });
 
@@ -36,11 +49,19 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({
           message: 'Form received!',
           data: fields,
-          file: fileName,
+          file: fileName || 'No file uploaded',
         }),
       });
     });
 
-    busboy.end(Buffer.from(event.body, 'base64'));
+    try {
+      busboy.end(Buffer.from(event.body, 'base64'));
+    } catch (err) {
+      console.error('Busboy error:', err);
+      reject({
+        statusCode: 500,
+        body: 'Internal server error',
+      });
+    }
   });
 };
