@@ -1,2 +1,14 @@
+[build]
+  functions = "netlify/functions"
+  publish = "."
+
 [functions]
   directory = "netlify/functions"
+
+[functions."submit"]
+  node_bundler = "esbuild"
+  included_files = ["netlify/functions/submit.js"]
+  external_node_modules = ["busboy"]
+
+[dev]
+  autoLaunch = true
