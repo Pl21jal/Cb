@@ -1,5 +1,5 @@
 {
-  "name": "form-api-project",
+  "name": "form-api",
   "version": "1.0.0",
   "dependencies": {
     "busboy": "^1.6.0"
