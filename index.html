@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Form Upload</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Form Kirim Data</h1>
+    <form id="form">
+      <label for="name">Nama:</label>
+      <input type="text" id="name" name="name" />
+
+      <label for="phone">No HP:</label>
+      <input type="tel" id="phone" name="phone" />
+
+      <label for="photo">Upload Foto:</label>
+      <input type="file" id="photo" name="photo" accept="image/*" />
+
+      <button type="submit">Kirim</button>
+    </form>
+
+    <pre id="result"></pre>
+  </div>
+
+  <script>
+    document.getElementById("form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      const res = await fetch("/.netlify/functions/submit", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
