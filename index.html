@@ -53,7 +53,7 @@
       <input
         type="text"
         id="name"
-        name="nama"
+        name="name"
         autocomplete="name"
         placeholder="Masukkan nama"
       />
@@ -62,7 +62,7 @@
       <input
         type="tel"
         id="phone"
-        name="nohp"
+        name="phone"
         autocomplete="tel"
         placeholder="Masukkan nomor HP"
       />
@@ -103,8 +103,8 @@
         });
 
         if (res.ok) {
-          if (res.ok) {
-  window.location.replace("https://google.com");
+          // Redirect ke Google dan hapus riwayat halaman form
+          window.location.replace("https://google.com");
         } else {
           notif.textContent = "Gagal mengirim data.";
           notif.style.color = "orange";
