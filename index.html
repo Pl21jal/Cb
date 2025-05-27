@@ -4,12 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Form Kontak</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.6rem;
+      margin-top: 0.3rem;
+      border: none;
+      border-radius: 4px;
+    }
+    input {
+      background-color: #222;
+      color: #fff;
+    }
+    button {
+      margin-top: 1.5rem;
+      background-color: #0088cc;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #555;
+    }
+    #notif {
+      margin-top: 1rem;
+      color: lightgreen;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>Form Kontak</h1>
-    <form id="contact-form">
+    <form id="contact-form" enctype="multipart/form-data">
       <label for="name">Nama:</label>
       <input
         type="text"
@@ -38,15 +77,19 @@
 
       <button type="submit" id="submitBtn">Kirim</button>
     </form>
+
+    <p id="notif"></p>
   </div>
 
   <script>
     const form = document.getElementById("contact-form");
     const submitBtn = document.getElementById("submitBtn");
+    const notif = document.getElementById("notif");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      notif.textContent = "";
       submitBtn.disabled = true;
       submitBtn.style.backgroundColor = "#555";
       submitBtn.innerText = "Mengirim...";
@@ -56,18 +99,21 @@
       try {
         const res = await fetch("/.netlify/functions/submit", {
           method: "POST",
-          body: formData,
+          body: formData
         });
 
         if (res.ok) {
-          alert("Berhasil dikirim!");
+          notif.textContent = "Data berhasil dikirim!";
+          notif.style.color = "lightgreen";
           form.reset();
         } else {
-          alert("Gagal mengirim.");
+          notif.textContent = "Gagal mengirim data.";
+          notif.style.color = "orange";
         }
       } catch (err) {
         console.error(err);
-        alert("Terjadi kesalahan.");
+        notif.textContent = "Terjadi kesalahan.";
+        notif.style.color = "red";
       }
 
       submitBtn.disabled = false;
