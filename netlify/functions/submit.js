@@ -1,69 +1,46 @@
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-const busboy = require("busboy");
+const Busboy = require('busboy');
+const fs = require('fs');
+const path = require('path');
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: "Method Not Allowed" };
-  }
-
+exports.handler = async (event, context) => {
   return new Promise((resolve, reject) => {
-    const bb = busboy({ headers: event.headers });
-    const fields = {};
-    let fileData = null;
-    let fileName = "";
+    if (event.httpMethod !== 'POST') {
+      resolve({
+        statusCode: 405,
+        body: 'Method Not Allowed',
+      });
+      return;
+    }
 
-    bb.on("file", (fieldname, file, info) => {
-      const { filename, encoding, mimeType } = info;
-      fileName = Date.now() + "_" + filename;
-      const saveTo = path.join(os.tmpdir(), fileName);
-      file.pipe(fs.createWriteStream(saveTo));
-      file.on("end", () => {
-        fileData = fileName;
+    const busboy = new Busboy({ headers: event.headers });
+    let fields = {};
+    let fileData = null;
+    let fileName = null;
+
+    busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+      fileName = filename;
+      const filePath = path.join('/tmp', filename);
+      file.pipe(fs.createWriteStream(filePath));
+      file.on('end', () => {
+        fileData = filePath;
       });
     });
 
-    bb.on("field", (name, val) => {
-      fields[name] = val;
+    busboy.on('field', (fieldname, value) => {
+      fields[fieldname] = value;
     });
 
-    bb.on("finish", () => {
-      const uploadsDir = path.join(__dirname, "uploads");
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir);
-      }
-
-      let savedFilePath = "";
-      if (fileData) {
-        const tempPath = path.join(os.tmpdir(), fileData);
-        const finalPath = path.join(uploadsDir, fileData);
-        fs.copyFileSync(tempPath, finalPath);
-        savedFilePath = `/uploads/${fileData}`;
-      }
-
-      const newEntry = {
-        name: fields.name || "",
-        phone: fields.phone || "",
-        photo: savedFilePath,
-        time: new Date().toISOString()
-      };
-
-      const dataPath = path.join(__dirname, "data.json");
-      let existingData = [];
-      if (fs.existsSync(dataPath)) {
-        existingData = JSON.parse(fs.readFileSync(dataPath));
-      }
-
-      existingData.push(newEntry);
-      fs.writeFileSync(dataPath, JSON.stringify(existingData, null, 2));
-
+    busboy.on('finish', () => {
       resolve({
         statusCode: 200,
-        body: JSON.stringify({ message: "Data saved successfully" })
+        body: JSON.stringify({
+          message: 'Form received!',
+          data: fields,
+          file: fileName,
+        }),
       });
     });
 
-    bb.end(Buffer.from(event.body, "base64"));
+    busboy.end(Buffer.from(event.body, 'base64'));
   });
 };
