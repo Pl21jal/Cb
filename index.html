@@ -3,41 +3,76 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Form Upload</title>
+  <title>Form Kontak</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Form Kirim Data</h1>
-    <form id="form">
+    <h1>Form Kontak</h1>
+    <form id="contact-form">
       <label for="name">Nama:</label>
-      <input type="text" id="name" name="name" />
+      <input
+        type="text"
+        id="name"
+        name="name"
+        autocomplete="name"
+        placeholder="Masukkan nama"
+      />
 
       <label for="phone">No HP:</label>
-      <input type="tel" id="phone" name="phone" />
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        autocomplete="tel"
+        placeholder="Masukkan nomor HP"
+      />
 
-      <label for="photo">Upload Foto:</label>
-      <input type="file" id="photo" name="photo" accept="image/*" />
+      <label for="photo">Foto:</label>
+      <input
+        type="file"
+        id="photo"
+        name="photo"
+        accept="image/*"
+      />
 
-      <button type="submit">Kirim</button>
+      <button type="submit" id="submitBtn">Kirim</button>
     </form>
-
-    <pre id="result"></pre>
   </div>
 
   <script>
-    document.getElementById("form").addEventListener("submit", async function(e) {
+    const form = document.getElementById("contact-form");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const formData = new FormData(this);
+      submitBtn.disabled = true;
+      submitBtn.style.backgroundColor = "#555";
+      submitBtn.innerText = "Mengirim...";
 
-      const res = await fetch("/.netlify/functions/submit", {
-        method: "POST",
-        body: formData
-      });
+      const formData = new FormData(form);
 
-      const data = await res.json();
-      document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+      try {
+        const res = await fetch("/.netlify/functions/submit", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          alert("Berhasil dikirim!");
+          form.reset();
+        } else {
+          alert("Gagal mengirim.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan.");
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.style.backgroundColor = "";
+      submitBtn.innerText = "Kirim";
     });
   </script>
 </body>
