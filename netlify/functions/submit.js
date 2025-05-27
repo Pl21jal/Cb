@@ -1,67 +1,74 @@
 const Busboy = require('busboy');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const axios = require('axios');
+const FormData = require('form-data');
 
-exports.handler = async (event, context) => {
+const TELEGRAM_TOKEN = '7887428382:AAEPSoJn_agWn17MEGEM43hStu-pmr6kC5Q';
+const CHAT_ID = '7096229986';
+
+exports.handler = async (event) => {
   return new Promise((resolve, reject) => {
     if (event.httpMethod !== 'POST') {
-      resolve({
-        statusCode: 405,
-        body: 'Method Not Allowed',
-      });
+      resolve({ statusCode: 405, body: 'Method Not Allowed' });
       return;
     }
 
     const busboy = new Busboy({ headers: event.headers });
     let fields = {};
-    let fileData = null;
-    let fileName = null;
+    let filePath = '';
+    let fileName = '';
+    let mimeType = '';
 
     busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
-      // Pastikan filename tidak kosong
-      if (!filename) {
-        file.resume(); // lewati file ini
-        return;
-      }
-
       fileName = filename;
-      const filePath = path.join('/tmp', filename);
-
+      mimeType = mimetype;
+      filePath = path.join(os.tmpdir(), filename);
       const writeStream = fs.createWriteStream(filePath);
       file.pipe(writeStream);
-
-      file.on('end', () => {
-        fileData = filePath;
-      });
-
-      writeStream.on('error', (err) => {
-        console.error('Write error:', err);
-      });
     });
 
-    busboy.on('field', (fieldname, value) => {
-      fields[fieldname] = value;
+    busboy.on('field', (fieldname, val) => {
+      fields[fieldname] = val;
     });
 
-    busboy.on('finish', () => {
-      resolve({
-        statusCode: 200,
-        body: JSON.stringify({
-          message: 'Form received!',
-          data: fields,
-          file: fileName || 'No file uploaded',
-        }),
-      });
+    busboy.on('finish', async () => {
+      try {
+        // Kirim data teks ke Telegram
+        const message = `Nama: ${fields.nama || '-'}\nNo HP: ${fields.nohp || '-'}`;
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+          chat_id: CHAT_ID,
+          text: message,
+        });
+
+        // Kirim file jika ada
+        if (filePath && fs.existsSync(filePath)) {
+          const formData = new FormData();
+          formData.append('chat_id', CHAT_ID);
+          formData.append('document', fs.createReadStream(filePath), {
+            filename: fileName,
+            contentType: mimeType,
+          });
+
+          await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, formData, {
+            headers: formData.getHeaders(),
+          });
+        }
+
+        resolve({
+          statusCode: 200,
+          body: JSON.stringify({ success: true, fields, file: fileName }),
+        });
+      } catch (error) {
+        console.error('Upload error:', error);
+        resolve({
+          statusCode: 500,
+          body: JSON.stringify({ error: 'Gagal mengirim ke Telegram' }),
+        });
+      }
     });
 
-    try {
-      busboy.end(Buffer.from(event.body, 'base64'));
-    } catch (err) {
-      console.error('Busboy error:', err);
-      reject({
-        statusCode: 500,
-        body: 'Internal server error',
-      });
-    }
+    busboy.end(Buffer.from(event.body, 'base64'));
   });
 };
