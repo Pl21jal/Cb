@@ -35,8 +35,12 @@ exports.handler = async (event) => {
 
     busboy.on('finish', async () => {
       try {
-        // Kirim data teks ke Telegram
-        const message = `Nama: ${fields.nama || '-'}\nNo HP: ${fields.nohp || '-'}`;
+        // Ambil data dari form field
+        const name = fields.name || '-';
+        const phone = fields.phone || '-';
+
+        // Kirim teks ke Telegram
+        const message = `Nama: ${name}\nNo HP: ${phone}`;
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
           chat_id: CHAT_ID,
           text: message,
