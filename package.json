@@ -1,7 +1,7 @@
 {
-  "name": "form-api",
+  "name": "form-upload-api",
   "version": "1.0.0",
   "dependencies": {
-    "busboy": "^1.6.0"
+    "busboy": "0.3.1"
   }
 }
