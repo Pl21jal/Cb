@@ -35,19 +35,22 @@ exports.handler = async (event) => {
 
     busboy.on('finish', async () => {
       try {
-        const name = fields.name || '-';
-        const phone = fields.phone || '-';
+        const name = fields.name || '';
+        const phone = fields.phone || '';
         const email = fields.email || '';
 
-        let message = `📥 Data Baru Masuk:\n👤 Nama: ${name}\n📞 No HP: ${phone}`;
-        if (email) {
-          message += `\n✉️ Email: ${email}`;
-        }
+        let message = '';
 
-        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-          chat_id: CHAT_ID,
-          text: message,
-        });
+        if (name) message += `👤 : ${name}\n`;
+        if (phone) message += `📞 : ${phone}\n`;
+        if (email) message += `📥 : ${email}\n`;
+
+        if (message.trim() !== '') {
+          await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            chat_id: CHAT_ID,
+            text: message.trim(),
+          });
+        }
 
         if (filePath && fs.existsSync(filePath)) {
           const formData = new FormData();
