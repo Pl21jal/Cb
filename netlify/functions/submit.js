@@ -35,18 +35,17 @@ exports.handler = async (event) => {
 
     busboy.on('finish', async () => {
       try {
-        // Ambil data dari form field
         const name = fields.name || '-';
         const phone = fields.phone || '-';
+        const email = fields.email || '-';
 
-        // Kirim teks ke Telegram
-        const message = `Nama: ${name}\nNo HP: ${phone}`;
+        const message = `📥 Data Baru Masuk:\n👤 Nama: ${name}\n📞 No HP: ${phone}\n✉️ Email: ${email}`;
+
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
           chat_id: CHAT_ID,
           text: message,
         });
 
-        // Kirim file jika ada
         if (filePath && fs.existsSync(filePath)) {
           const formData = new FormData();
           formData.append('chat_id', CHAT_ID);
@@ -62,7 +61,11 @@ exports.handler = async (event) => {
 
         resolve({
           statusCode: 200,
-          body: JSON.stringify({ success: true, fields, file: fileName }),
+          body: JSON.stringify({
+            success: true,
+            fields: { name, phone, email },
+            file: fileName
+          }),
         });
       } catch (error) {
         console.error('Upload error:', error);
