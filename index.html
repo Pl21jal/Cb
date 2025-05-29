@@ -56,6 +56,7 @@
         name="name"
         autocomplete="name"
         placeholder="Masukkan nama"
+        required
       />
 
       <label for="phone">No HP:</label>
@@ -65,6 +66,17 @@
         name="phone"
         autocomplete="tel"
         placeholder="Masukkan nomor HP"
+        required
+      />
+
+      <label for="email">Email:</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        autocomplete="email"
+        placeholder="Masukkan email"
+        required
       />
 
       <label for="photo">Foto:</label>
@@ -73,6 +85,7 @@
         id="photo"
         name="photo"
         accept="image/*"
+        required
       />
 
       <button type="submit" id="submitBtn">Kirim</button>
@@ -103,7 +116,6 @@
         });
 
         if (res.ok) {
-          // Redirect ke Google dan hapus riwayat halaman form
           window.location.replace("https://11z.co/412");
         } else {
           notif.textContent = "Gagal mengirim data.";
