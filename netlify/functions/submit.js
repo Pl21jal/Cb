@@ -37,9 +37,12 @@ exports.handler = async (event) => {
       try {
         const name = fields.name || '-';
         const phone = fields.phone || '-';
-        const email = fields.email || '-';
+        const email = fields.email || '';
 
-        const message = `📥 Data Baru Masuk:\n👤 Nama: ${name}\n📞 No HP: ${phone}\n✉️ Email: ${email}`;
+        let message = `📥 Data Baru Masuk:\n👤 Nama: ${name}\n📞 No HP: ${phone}`;
+        if (email) {
+          message += `\n✉️ Email: ${email}`;
+        }
 
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
           chat_id: CHAT_ID,
