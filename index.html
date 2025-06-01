@@ -3,129 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Form Kontak</title>
+  <title>Form Kontak ke Telegram</title>
   <style>
     body {
-      background-color: #111;
-      color: #fff;
       font-family: sans-serif;
+      background-color: #f5f5f5;
       padding: 2rem;
     }
-    .container {
-      max-width: 500px;
+    form {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      max-width: 400px;
       margin: auto;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     input, button {
       width: 100%;
-      padding: 0.6rem;
-      margin-top: 0.3rem;
-      border: none;
-      border-radius: 4px;
-    }
-    input {
-      background-color: #222;
-      color: #fff;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
     }
     button {
-      margin-top: 1.5rem;
-      background-color: #0088cc;
-      color: #fff;
+      background-color: #007bff;
+      color: white;
+      border: none;
       cursor: pointer;
     }
-    button:disabled {
-      background-color: #555;
-    }
-    #notif {
-      margin-top: 1rem;
-      color: lightgreen;
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <form id="contact-form" enctype="multipart/form-data">
-      <label for="name">Nama:</label>
-      <input
-        type="text"
-        id="name"
-        name="name"
-        autocomplete="name"
-        placeholder="Masukkan nama"
-      />
 
-      <label for="phone">No HP:</label>
-      <input
-        type="tel"
-        id="phone"
-        name="phone"
-        autocomplete="tel"
-        placeholder="Masukkan nomor HP"
-      />
+<form id="formKontak" autocomplete="on">
+  <input type="text" id="nama" name="name" autocomplete="name" placeholder="Nama" required />
+  <input type="tel" id="nohp" name="tel" autocomplete="tel" placeholder="No HP" required />
+  <input type="email" id="email" name="email" autocomplete="email" placeholder="Email" required />
+  <input type="file" id="foto" name="foto" accept="image/*" required />
+  <button type="submit">Kirim</button>
+</form>
 
-      <label for="email">Email:</label>
-      <input
-        type="email"
-        id="email"
-        name="email"
-        autocomplete="email"
-        placeholder="Masukkan email"
-      />
+<script>
+  // Fokus otomatis ke kolom nama saat halaman dibuka
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('nama').focus();
+  });
 
-      <label for="photo">Foto:</label>
-      <input
-        type="file"
-        id="photo"
-        name="photo"
-        accept="image/*"
-      />
+  const form = document.getElementById('formKontak');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      <button type="submit" id="submitBtn">Kirim</button>
-    </form>
+    const formData = new FormData(form);
 
-    <p id="notif"></p>
-  </div>
+    try {
+      const response = await fetch("/.netlify/functions/kirimFormKeTelegram", {
+        method: "POST",
+        body: formData,
+      });
 
-  <script>
-    const form = document.getElementById("contact-form");
-    const submitBtn = document.getElementById("submitBtn");
-    const notif = document.getElementById("notif");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      notif.textContent = "";
-      submitBtn.disabled = true;
-      submitBtn.style.backgroundColor = "#555";
-      submitBtn.innerText = "Mengirim...";
-
-      const formData = new FormData(form);
-
-      try {
-        const res = await fetch("/.netlify/functions/submit", {
-          method: "POST",
-          body: formData
-        });
-
-        if (res.ok) {
-          window.location.replace("https://11z.co/412");
-        } else {
-          notif.textContent = "Gagal mengirim data.";
-          notif.style.color = "orange";
-        }
-      } catch (err) {
-        console.error(err);
-        notif.textContent = "Terjadi kesalahan.";
-        notif.style.color = "red";
+      if (response.ok) {
+        alert("Data berhasil dikirim ke Telegram!");
+        form.reset();
+      } else {
+        alert("Gagal mengirim data.");
       }
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan.");
+    }
+  });
+</script>
 
-      submitBtn.disabled = false;
-      submitBtn.style.backgroundColor = "";
-      submitBtn.innerText = "Kirim";
-    });
-  </script>
 </body>
 </html>
